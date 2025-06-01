@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id        Int       @id @default(autoincrement())
+  user_name      String
+  user_email     String    @unique 
+  user_role      String
+  incidents Incident[]
+  comments  Comment[]
+}
+
+model Room {
+  room_id        Int       @id @default(autoincrement())
+  room_name      String
+  incidents Incident[]
+}
+
+model Incident {
+  incident_id          Int       @id @default(autoincrement())
+  incident_title       String
+  incident_description String
+  incident_created_at   DateTime  @default(now())
+  user        User      @relation(fields: [user_id], references: [user_id])
+  user_id      Int
+  category    Category  @relation(fields: [category_id], references: [category_id])
+  category_id  Int
+  status      Status    @relation(fields: [status_id], references: [status_id])
+  status_id    Int
+  room        Room      @relation(fields: [room_id], references: [room_id])
+  room_id      Int
+  comments    Comment[]
+}
+
+model Category {
+  category_id        Int       @id @default(autoincrement())
+  category_name      String
+  incidents Incident[]
+}
+
+model Status {
+  status_id        Int       @id @default(autoincrement())
+  status_name      String
+  incidents Incident[]
+}
+
+model Comment {
+  comment_id         Int       @id @default(autoincrement())
+  comment_content    String
+  comment_createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [user_id], references: [user_id])
+  user_id     Int
+  incident   Incident  @relation(fields: [incident_id], references: [incident_id])
+  incident_id Int
+}
