@@ -12,6 +12,7 @@ model User {
   user_name      String
   user_email     String    @unique 
   user_role      String
+  password       String
   incidents Incident[]
   comments  Comment[]
 }

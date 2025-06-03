@@ -29,5 +29,16 @@ export class AuthService {
             user_email: dto.user_email
          },
         });
+        if (!user) throw new UnauthorizedException('Email not found');
+
+        const pwMatches = await bcrypt.compare(dto.password, user.password);
+        if (!pwMatches) throw new UnauthorizedException('Invalid password');
+
+        return this.signToken(user.user_id, user.user_email);
+    }
+    signToken(userId: number, email: string): {acess_token: string} {
+        const payload = { sub: userId, email };
+        const token = this.jwt.sign(payload);
+        return {acess_token: token };
     }
 }
