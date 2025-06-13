@@ -7,56 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  user_id        Int       @id @default(autoincrement())
-  user_name      String
-  user_email     String    @unique 
-  user_role      String
-  password       String
-  incidents incident[]
-  comments  comment[]
+model User {
+  userId                Int            @id @default(autoincrement())
+  username              String         @unique
+  password              String
+  role                  String
+  isActive              Boolean        @default(true)
+  incidents             Incident[]     @relation("UserIncidents")
+  handledIncidents      Incident[]     @relation("StaffHandledIncidents")
+  staffRatingsGiven     StaffRating[]  @relation("StaffRatingUser")
+  staffRatingsReceived  StaffRating[]  @relation("StaffRatingStaff")
 }
 
-model room {
-  room_id        Int       @id @default(autoincrement())
-  room_name      String
-  incidents incident[]
+model Room {
+  roomId      Int         @id @default(autoincrement())
+  name        String      @unique
+  description String?
+  incidents   Incident[]
 }
 
-model incident {
-  incident_id          Int       @id @default(autoincrement())
-  incident_title       String
-  incident_description String
-  incident_created_at   DateTime  @default(now())
-  user        user      @relation(fields: [user_id], references: [user_id])
-  user_id      Int
-  category    category  @relation(fields: [category_id], references: [category_id])
-  category_id  Int
-  status      status    @relation(fields: [status_id], references: [status_id])
-  status_id    Int
-  room        room      @relation(fields: [room_id], references: [room_id])
-  room_id      Int
-  comments    comment[]
+model IncidentType {
+  incidentTypeId Int      @id @default(autoincrement())
+  name           String   @unique
+  description    String?
+  incidents      Incident[]
 }
 
-model category {
-  category_id        Int       @id @default(autoincrement())
-  category_name      String
-  incidents incident[]
+model Incident {
+  incidentId     Int          @id @default(autoincrement())
+  title          String
+  description    String
+  status         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation("UserIncidents", fields: [userId], references: [userId])
+  userId         Int
+  room           Room         @relation(fields: [roomId], references: [roomId])
+  roomId         Int
+  incidentType   IncidentType @relation(fields: [incidentTypeId], references: [incidentTypeId])
+  incidentTypeId Int
+  handledBy      User?        @relation("StaffHandledIncidents", fields: [handledById], references: [userId])
+  handledById    Int?
+  staffRating    StaffRating?
 }
 
-model status {
-  status_id        Int       @id @default(autoincrement())
-  status_name      String
-  incidents incident[]
-}
-
-model comment {
-  comment_id         Int       @id @default(autoincrement())
-  comment_content    String
-  comment_createdAt  DateTime  @default(now())
-  user       user      @relation(fields: [user_id], references: [user_id])
-  user_id     Int
-  incident   incident  @relation(fields: [incident_id], references: [incident_id])
-  incident_id Int
+model StaffRating {
+  staffRatingId Int      @id @default(autoincrement())
+  incident      Incident @relation(fields: [incidentId], references: [incidentId])
+  incidentId    Int      @unique
+  staff         User     @relation("StaffRatingStaff", fields: [staffId], references: [userId])
+  staffId       Int
+  user          User     @relation("StaffRatingUser", fields: [userId], references: [userId])
+  userId        Int
+  rating        Int      // 1-5
+  comment       String?
+  createdAt     DateTime @default(now())
 }

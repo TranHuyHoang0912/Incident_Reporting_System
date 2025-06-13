@@ -1,19 +1,15 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller, Post, Body, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
-     @Post('login')
-     login(@Body() dto: LoginDto) {
-        return this.authService.login(dto);
-     }
-
-     @Post('signup')
-     signup(@Body() dto: SignupDto) {
-        return this.authService.signup(dto);
-     }
+  @Post('login')
+  @UsePipes(new ValidationPipe({ whitelist: true })) // Validate input theo DTO login
+  async login(@Body() body: LoginDto) {
+     // Gọi service xử lý đăng nhập
+    return this.authService.login(body.username, body.password);
+  }
 }
